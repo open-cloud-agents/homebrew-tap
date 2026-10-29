@@ -1,0 +1,28 @@
+name: Brew Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-formula:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Checkout Tap
+        uses: actions/checkout@v4
+
+      - name: Test Formula Installation
+        run: |
+          brew install --verbose --build-from-source Formula/ocagents.rb
+          ocagents info
+          ocagents list
+          brew test ocagents
