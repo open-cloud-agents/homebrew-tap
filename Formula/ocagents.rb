@@ -1,4 +1,6 @@
 class Ocagents < Formula
+  include Language::Python::Virtualenv
+
   desc "Universal CLI & specialist agents for Cloud Architecture, DevSecOps, SRE, and FinOps"
   homepage "https://open-cloud-agents.github.io/ocagents/"
   url "https://github.com/open-cloud-agents/ocagents/archive/refs/tags/v1.3.0.tar.gz"
@@ -8,13 +10,21 @@ class Ocagents < Formula
 
   depends_on "python@3.12"
 
+  resource "pyyaml" do
+    url "https://files.pythonhosted.org/packages/54/ed/79a089b6be93607fa5cdaedf301d7dfb23af5f25c398d5ead2525b063e17/pyyaml-6.0.2.tar.gz"
+    sha256 "d584d9ec91ad65861cc08d42e834324ef890a082e591037abe114850ff7bbc3e"
+  end
+
   def install
-    pkgshare.install "agents", "skills", "rules", "scripts", "src"
+    pkgshare.install "agents", "skills", "rules", "scripts"
+    venv = virtualenv_create(libexec, "python3.12")
+    venv.pip_install resources
+    venv.pip_install buildpath
 
     (bin/"ocagents").write <<~EOS
       #!/usr/bin/env bash
-      export OCAGENTS_HOME="#{opt_pkgshare}"
-      exec "#{Formula["python@3.12"].opt_bin}/python3.12" "#{opt_pkgshare}/src/ocagents/cli.py" "$@"
+      export OCAGENTS_HOME="${OCAGENTS_HOME:-#{opt_pkgshare}}"
+      exec "#{libexec}/bin/ocagents" "$@"
     EOS
 
     (bin/"oca").write <<~EOS
