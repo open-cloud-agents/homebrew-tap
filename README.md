@@ -10,10 +10,11 @@ Official [Homebrew](https://brew.sh/) tap for the **Open Cloud Agents** universa
 
 ## ⚡ Quickstart
 
-### Option 1: Tap and Install (Recommended)
+### Option 1: Tap, Trust, and Install (Recommended)
 
 ```bash
 brew tap open-cloud-agents/tap
+brew trust open-cloud-agents/tap    # Required on Homebrew 4.4+ for third-party taps
 brew install ocagents
 ```
 
@@ -22,6 +23,10 @@ brew install ocagents
 ```bash
 brew install open-cloud-agents/tap/ocagents
 ```
+
+> [!NOTE]
+> If Homebrew 4.4+ prompts with *"Refusing to load formula from untrusted tap"*, simply run:  
+> `brew trust open-cloud-agents/tap` and re-run the install command.
 
 ---
 
