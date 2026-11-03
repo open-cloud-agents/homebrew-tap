@@ -15,10 +15,10 @@ jobs:
     steps:
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
 
       - name: Checkout Tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Test Formula Installation
         run: |
