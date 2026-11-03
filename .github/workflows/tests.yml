@@ -17,12 +17,9 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Checkout Tap
-        uses: actions/checkout@v7
-
       - name: Test Formula Installation
         run: |
-          brew install --verbose --build-from-source Formula/ocagents.rb
+          brew install --verbose --build-from-source open-cloud-agents/tap/ocagents
           ocagents info
           ocagents list
-          brew test ocagents
+          brew test open-cloud-agents/tap/ocagents
