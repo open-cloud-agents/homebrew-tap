@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/Homebrew-Formula-orange.svg?logo=homebrew&logoColor=white)](Formula/ocagents.rb)
-[![Release](https://img.shields.io/badge/Version-v1.3.0-blue.svg)](https://github.com/open-cloud-agents/open-cloud-agents/releases)
+[![Release](https://img.shields.io/badge/Version-v1.5.0-blue.svg)](https://github.com/open-cloud-agents/ocagents/releases)
 
 Official [Homebrew](https://brew.sh/) tap for the **Open Cloud Agents** universal CLI (`ocagents`).
 
@@ -41,6 +41,12 @@ ocagents info
 # List the 7-Agent Master Suite
 ocagents list
 
+# Run deterministic pre-flight scanner gatekeeper (v1.5)
+ocagents preflight --help
+
+# Validate schema-conforming findings (v1.4)
+ocagents findings validate --help
+
 # Run with the short alias
 oca --help
 ```
@@ -71,6 +77,8 @@ brew untap open-cloud-agents/tap
 
 The `ocagents` formula packages:
 * The **7-Agent Master Suite** (Principal Cloud Architect, Security Compliance Commander, FinOps Cost Optimizer, DevSecOps Reviewer, DevSecOps Engineer, GitOps Release Manager, SRE Reliability Engineer).
+* **Deterministic Pre-flight Gatekeeper** (v1.5): Fail-closed static scanner availability checks (Checkov, Trivy, Ruff, ShellCheck, CodeQL, OPA).
+* **Strict Finding Schema Validator** (v1.4): Verifies AI/scanner finding JSON against canonical JSON Schema with provenance.
 * Comprehensive cloud skills (`terraform`, `kubernetes`, `aws-well-architected`, `ai-safety-governance`).
 * Standalone executable wrapper with zero third-party Python runtime overhead.
 
@@ -80,4 +88,4 @@ The `ocagents` formula packages:
 
 * Licensed under the [Apache License 2.0](LICENSE) (c) 2026 Ibrahim Jimoh.
 * Maintained by **[Open Cloud Agents](https://github.com/open-cloud-agents)**.
-* Upstream Codebase: [open-cloud-agents](https://github.com/open-cloud-agents/open-cloud-agents).
+* Upstream Codebase: [ocagents](https://github.com/open-cloud-agents/ocagents).
