@@ -17,9 +17,16 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Test Formula Installation
+      - name: Test Formula Installation & Smoke Tests
         run: |
-          brew install --verbose --build-from-source open-cloud-agents/tap/ocagents
+          brew install --verbose open-cloud-agents/tap/ocagents
           ocagents info
           ocagents list
+          oca version
+          ocagents preflight --help
           brew test open-cloud-agents/tap/ocagents
+
+      - name: Verify Recommended Linters Automatically Provisioned
+        run: |
+          command -v ruff || (echo "ruff missing from recommended deps" && exit 1)
+          command -v shellcheck || (echo "shellcheck missing from recommended deps" && exit 1)
