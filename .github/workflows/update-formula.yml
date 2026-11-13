@@ -1,0 +1,144 @@
+name: Update Formula from Release
+
+on:
+  repository_dispatch:
+    types: [ocagents-released, release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag (e.g. v2.0.1 or latest)"
+        required: false
+        default: "latest"
+  schedule:
+    # Automated safety net every 6 hours
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-formula:
+    name: Sync ocagents Formula
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Homebrew Tap
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve Target Version & Checksums
+        id: sync
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          python3 -c "
+          import urllib.request, json, os, re, sys
+
+          raw_ver = os.environ.get('INPUT_VERSION') or os.environ.get('DISPATCH_VERSION') or ''
+          raw_ver = raw_ver.strip().lstrip('v')
+
+          if not raw_ver or raw_ver == 'latest':
+              req = urllib.request.Request(
+                  'https://api.github.com/repos/open-cloud-agents/ocagents/releases/latest',
+                  headers={'User-Agent': 'homebrew-tap-sync'}
+              )
+              with urllib.request.urlopen(req, timeout=10) as resp:
+                  data = json.loads(resp.read().decode('utf-8'))
+                  target_ver = data['tag_name'].lstrip('v')
+          else:
+              target_ver = raw_ver
+
+          print(f'Target ocagents version: v{target_ver}')
+
+          formula_path = 'Formula/ocagents.rb'
+          with open(formula_path, 'r', encoding='utf-8') as f:
+              formula_content = f.read()
+
+          current_ver_match = re.search(r'version\s+\"([^\"]+)\"', formula_content)
+          current_ver = current_ver_match.group(1) if current_ver_match else ''
+          print(f'Current Formula version: v{current_ver}')
+
+          checksums_url = f'https://github.com/open-cloud-agents/ocagents/releases/download/v{target_ver}/checksums.txt'
+          print(f'Fetching checksums from: {checksums_url}')
+
+          req = urllib.request.Request(checksums_url, headers={'User-Agent': 'homebrew-tap-sync'})
+          try:
+              with urllib.request.urlopen(req, timeout=10) as resp:
+                  checksums_text = resp.read().decode('utf-8')
+          except Exception as e:
+              print(f'Error fetching checksums.txt: {e}', file=sys.stderr)
+              sys.exit(1)
+
+          checksums = {}
+          for line in checksums_text.strip().splitlines():
+              parts = line.split()
+              if len(parts) >= 2:
+                  checksums[parts[1]] = parts[0]
+
+          arm_sha = checksums.get('ocagents-darwin-arm64.tar.gz', '')
+          intel_sha = checksums.get('ocagents-darwin-amd64.tar.gz', '')
+          lin_intel_sha = checksums.get('ocagents-linux-amd64.tar.gz', '')
+          lin_arm_sha = checksums.get('ocagents-linux-arm64.tar.gz', '')
+
+          if not (arm_sha and intel_sha and lin_intel_sha and lin_arm_sha):
+              print(f'Missing required platform checksums in: {checksums}', file=sys.stderr)
+              sys.exit(1)
+
+          print(f'darwin-arm64: {arm_sha}')
+          print(f'darwin-amd64: {intel_sha}')
+          print(f'linux-amd64:  {lin_intel_sha}')
+          print(f'linux-arm64:  {lin_arm_sha}')
+
+          if current_ver == target_ver and arm_sha in formula_content:
+              print('Formula is already up to date with latest release. No update required.')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+                  out.write('updated=false\n')
+              sys.exit(0)
+
+          # Update version
+          new_formula = re.sub(r'version\s+\"[^\"]+\"', f'version \"{target_ver}\"', formula_content)
+          # Update download URLs
+          new_formula = re.sub(r'/releases/download/v[0-9\.]+', f'/releases/download/v{target_ver}', new_formula)
+
+          # Update platform sha256 digests
+          pattern_arm = r'(if OS\.mac\? && Hardware::CPU\.arm\?\s+url\s+\"[^\"]+\"\s+sha256\s+\")[^\"]+(\")'
+          new_formula = re.sub(pattern_arm, rf'\g<1>{arm_sha}\g<2>', new_formula)
+
+          pattern_intel = r'(if OS\.mac\? && Hardware::CPU\.intel\?\s+url\s+\"[^\"]+\"\s+sha256\s+\")[^\"]+(\")'
+          new_formula = re.sub(pattern_intel, rf'\g<1>{intel_sha}\g<2>', new_formula)
+
+          pattern_lin_intel = r'(if OS\.linux\? && Hardware::CPU\.intel\?\s+url\s+\"[^\"]+\"\s+sha256\s+\")[^\"]+(\")'
+          new_formula = re.sub(pattern_lin_intel, rf'\g<1>{lin_intel_sha}\g<2>', new_formula)
+
+          pattern_lin_arm = r'(if OS\.linux\? && Hardware::CPU\.arm\? && Hardware::CPU\.is_64_bit\?\s+url\s+\"[^\"]+\"\s+sha256\s+\")[^\"]+(\")'
+          new_formula = re.sub(pattern_lin_arm, rf'\g<1>{lin_arm_sha}\g<2>', new_formula)
+
+          with open(formula_path, 'w', encoding='utf-8') as f:
+              f.write(new_formula)
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('updated=true\n')
+              out.write(f'version={target_ver}\n')
+          "
+
+      - name: Verify Ruby Syntax
+        if: steps.sync.outputs.updated == 'true'
+        run: ruby -c Formula/ocagents.rb
+
+      - name: Commit & Push Updated Formula
+        if: steps.sync.outputs.updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/ocagents.rb
+          git commit -m "chore(release): bump formula to v${{ steps.sync.outputs.version }} with latest sha256 digests" \
+                     -m "Automated formula synchronization triggered by ocagents release v${{ steps.sync.outputs.version }}." \
+                     -m "Signed-off-by: Ibrahim Jimoh <Ibrahimng@users.noreply.github.com>" \
+                     -m "Co-authored-by: Antigravity <antigravity@google.com>"
+          git push origin main
