@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/Homebrew-Formula-orange.svg?logo=homebrew&logoColor=white)](Formula/ocagents.rb)
-[![Release](https://img.shields.io/badge/Version-v1.5.0-blue.svg)](https://github.com/open-cloud-agents/ocagents/releases)
+[![Release](https://img.shields.io/badge/Version-v2.0.0-blue.svg)](https://github.com/open-cloud-agents/ocagents/releases)
 
 Official [Homebrew](https://brew.sh/) tap for the **Open Cloud Agents** universal CLI (`ocagents`).
 
@@ -47,6 +47,13 @@ ocagents preflight --help
 # Validate schema-conforming findings (v1.4)
 ocagents findings validate --help
 
+# Triage diffs and inspect blackboard findings (v1.6)
+ocagents triage --help
+ocagents blackboard --help
+
+# Run token benchmark & calibration suite (v2.0)
+ocagents benchmark --help
+
 # Run with the short alias
 oca --help
 ```
@@ -79,6 +86,8 @@ The `ocagents` formula packages:
 * The **7-Agent Master Suite** (Principal Cloud Architect, Security Compliance Commander, FinOps Cost Optimizer, DevSecOps Reviewer, DevSecOps Engineer, GitOps Release Manager, SRE Reliability Engineer).
 * **Deterministic Pre-flight Gatekeeper** (v1.5): Fail-closed static scanner availability checks (Checkov, Trivy, Ruff, ShellCheck, CodeQL, OPA).
 * **Strict Finding Schema Validator** (v1.4): Verifies AI/scanner finding JSON against canonical JSON Schema with provenance.
+* **Risk Triage & Blackboard Store** (v1.6): 5-level diff risk tiering, SQLite WAL findings store, and TOON token-optimized projections.
+* **Specialist Multi-Agent Runtime & CI Triage Gate** (v2.0): Provider SDK adapters, constrained decoding, synthesis reporting, and token calibration benchmarks.
 * Comprehensive cloud skills (`terraform`, `kubernetes`, `aws-well-architected`, `ai-safety-governance`).
 * Standalone executable wrapper with zero third-party Python runtime overhead.
 
