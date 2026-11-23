@@ -3,26 +3,26 @@ class Ocagents < Formula
   desc "Universal CLI & specialist agents for Cloud Architecture, DevSecOps, SRE, and FinOps"
   homepage "https://open-cloud-agents.github.io/ocagents/"
   license "Apache-2.0"
-  version "2.0.1"
+  version "2.2.0"
 
   if OS.mac? && Hardware::CPU.arm?
-    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.0.1/ocagents-darwin-arm64.tar.gz"
-    sha256 "d5791123df4eda8db9e7e5981a256250ab64ce1abc52db86f87f844926fff359"
+    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.2.0/ocagents-darwin-arm64.tar.gz"
+    sha256 "b491ba03f910f49d91eaf05a9679f03d1973ae34d1661b0fb7ea6577c184b93e"
   end
 
   if OS.mac? && Hardware::CPU.intel?
-    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.0.1/ocagents-darwin-amd64.tar.gz"
-    sha256 "2b21b524816699ef980c41763b8a089c9d070e666a97bf61c559ef4b123a1690"
+    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.2.0/ocagents-darwin-amd64.tar.gz"
+    sha256 "dfe1367e2a68e0270cb1631023a121cfcb46f5752a3503c2f62aca4e16156d77"
   end
 
   if OS.linux? && Hardware::CPU.intel?
-    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.0.1/ocagents-linux-amd64.tar.gz"
-    sha256 "89dfe042ce93129b1582e08e22a730be93b33288afa683b518068cae20e6598f"
+    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.2.0/ocagents-linux-amd64.tar.gz"
+    sha256 "d1b5f6f4aac262d68ea5e22b0614836d53d7ac7debb2ad85da48d2cc8e6a2366"
   end
 
   if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.0.1/ocagents-linux-arm64.tar.gz"
-    sha256 "b0d8ccaa32ee0102afb00030c818c93dbc92c76e8f291d801c1ac154f4d0b364"
+    url "https://github.com/open-cloud-agents/ocagents/releases/download/v2.2.0/ocagents-linux-arm64.tar.gz"
+    sha256 "29ef02087ea84675a4871845914077bf66d9b8bd1bc8a05d2b068e699e7172aa"
   end
 
   depends_on "python@3.11" => :recommended
