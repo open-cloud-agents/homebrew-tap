@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   sync-formula:
@@ -131,8 +132,10 @@ jobs:
         if: steps.sync.outputs.updated == 'true'
         run: ruby -c Formula/ocagents.rb
 
-      - name: Commit & Push Updated Formula
+      - name: Commit & Publish Updated Formula
         if: steps.sync.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -141,4 +144,16 @@ jobs:
                      -m "Automated formula synchronization triggered by ocagents release v${{ steps.sync.outputs.version }}." \
                      -m "Signed-off-by: Ibrahim Jimoh <Ibrahimng@users.noreply.github.com>" \
                      -m "Co-authored-by: Antigravity <antigravity@google.com>"
-          git push origin main
+          if git push origin main 2>/dev/null; then
+            echo "✔ Pushed directly to main."
+          else
+            echo "Direct push to main was declined by repository rules. Opening pull request..."
+            BRANCH="chore/sync-formula-v${{ steps.sync.outputs.version }}-${{ github.run_id }}"
+            git checkout -b "$BRANCH"
+            git push -u origin "$BRANCH"
+            PR_URL=$(gh pr create --title "chore(release): bump formula to v${{ steps.sync.outputs.version }}" \
+                                  --body "Automated formula synchronization triggered by ocagents release v${{ steps.sync.outputs.version }}." \
+                                  --base main --head "$BRANCH")
+            echo "✔ Created PR: $PR_URL"
+            gh pr merge "$PR_URL" --squash --delete-branch || echo "ℹ PR awaiting maintainer merge."
+          fi
